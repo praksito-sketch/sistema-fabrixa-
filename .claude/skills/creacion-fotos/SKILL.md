@@ -30,7 +30,7 @@ F="python3 .claude/skills/creacion-fotos/scripts/fotos.py"
 | Logo / marca de agua | `$F logo in.jpg out.jpg --posicion abajo-der --opacidad 0.8` |
 | Retoque rápido | `$F mejorar in.jpg out.jpg --calido` |
 | Quitar fondo liso | `$F quitar-fondo in.jpg out.png --tolerancia 60` |
-| Foto de producto / catálogo | `$F producto prod.png out.jpg --fondo claro --degradado secundario --logo` |
+| Foto de producto / catálogo | `$F producto prod.png out.jpg --fondo gold --logo` (o `--fondo negro`) |
 | Collage | `$F collage a.jpg b.jpg c.jpg d.jpg -o out.jpg --formato cuadrado --logo` |
 | Ver la paleta de marca | `$F paleta paleta.png` |
 

@@ -48,7 +48,7 @@ Si hay voz y no hay .srt, transcribe el audio (pide el guion al equipo si no hay
 Si el usuario quiere un video generado desde cero o animado con plantillas, usa las herramientas `mcp__Canva__*` (cargarlas con ToolSearch): primero `get-video-production-guide`, luego `create-video` / `get-video-generation-status`, y `export-design` para descargar. Luego se puede post-procesar con este script (logo, música, formato).
 
 ## Buenas prácticas por red
-- Reels/TikTok: 1080×1920, 7–30 s, texto dentro de la zona segura (evitar 250 px de arriba y 350 px de abajo).
+- Reels/TikTok: 1080×1920, 7–30 s, texto dentro de la zona segura (evitar 250 px de arriba y 400 px de abajo).
 - Feed IG: 1080×1350. YouTube: 1920×1080. WhatsApp: < 16 MB.
 - Tono de copy según `marca/marca.json` (`tono`, `ejemplos_copy`). Cierre con WhatsApp 0414-1185571 / @maracuya.textil.
 

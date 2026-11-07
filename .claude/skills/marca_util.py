@@ -26,13 +26,16 @@ def color(nombre_o_hex: str) -> str:
 def fuente(rol_o_patron: str = "titulos") -> str:
     """Devuelve la ruta del archivo de fuente (rol de la marca o patrón fontconfig)."""
     patron = cargar_marca().get("fuentes", {}).get(rol_o_patron, rol_o_patron)
-    if Path(patron).is_file():
-        return patron
+    for cand in (RAIZ / patron, Path(patron)):
+        if cand.is_file():
+            return str(cand)
     out = subprocess.run(["fc-match", "-f", "%{file}", patron],
                          capture_output=True, text=True)
     return out.stdout.strip() or "DejaVuSans-Bold.ttf"
 
 
-def logo() -> Path | None:
-    ruta = RAIZ / cargar_marca().get("logo", "marca/logo.png")
+def logo(variante: str | None = None) -> Path | None:
+    m = cargar_marca()
+    rel = m.get("logos", {}).get(variante) if variante else None
+    ruta = RAIZ / (rel or m.get("logo", "marca/logo.png"))
     return ruta if ruta.is_file() else None

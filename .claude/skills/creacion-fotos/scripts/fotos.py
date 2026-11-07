@@ -41,7 +41,7 @@ def rgb(c):
     return color(c)
 
 
-def ajustar(img, w, h, modo="recortar", fondo="claro"):
+def ajustar(img, w, h, modo="recortar", fondo="negro"):
     if modo == "recortar":
         return ImageOps.fit(img, (w, h), Image.LANCZOS)
     lienzo = Image.new("RGBA", (w, h), rgb(fondo))
@@ -116,43 +116,153 @@ def cmd_mejorar(a):
     guardar(img, a.salida)
 
 
-def cmd_post(a):
-    """Pieza para redes: foto de fondo (o color) + titular + subtítulo + CTA + logo."""
-    w, h = FORMATOS[a.formato]
-    if a.foto:
-        img = ajustar(abrir(a.foto), w, h, "recortar")
-        capa = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-        dc = ImageDraw.Draw(capa)
-        oscuro = Image.new("RGBA", (1, 1), rgb("oscuro")).getpixel((0, 0))[:3]
-        for y in range(h):  # degradado inferior para legibilidad
-            t = max(0, (y - h * 0.35) / (h * 0.65))
-            dc.line([(0, y), (w, y)], fill=(*oscuro, int(220 * t)))
-        img.alpha_composite(capa)
-    else:
-        img = Image.new("RGBA", (w, h), rgb(a.fondo))
+def _ajustar_fuente(d, txt, rol, max_w, tam, max_lineas=3):
+    """Mayor tamaño (≤ tam) con el que el texto cabe en max_w usando ≤ max_lineas."""
+    ruta = fuente(rol)
+    while tam > 14:
+        f = ImageFont.truetype(ruta, tam)
+        palabras, lineas, actual = txt.split(), [], ""
+        for p in palabras:
+            prueba = (actual + " " + p).strip()
+            if d.textlength(prueba, font=f) <= max_w:
+                actual = prueba
+            else:
+                lineas.append(actual); actual = p
+        lineas.append(actual)
+        if len(lineas) <= max_lineas and all(d.textlength(l, font=f) <= max_w for l in lineas):
+            return f, "\n".join(lineas)
+        tam -= 4
+    return ImageFont.truetype(ruta, tam), txt
+
+
+def _grano(img, opacidad=0.14):
+    import random
+    w, h = img.size
+    ruido = Image.effect_noise((w // 2, h // 2), 90).resize((w, h)).convert("RGB")
+    return Image.blend(img.convert("RGB"), ImageChops.screen(img.convert("RGB"), ruido), opacidad).convert("RGBA")
+
+
+def _barra_marca(img, estilo, m_lat, m_sup):
+    """Barra superior: ícono del logo en círculo + 'Maracuyá Textil' + handle."""
+    marca = cargar_marca()
     d = ImageDraw.Draw(img)
-    m = int(w * 0.08)
-    y = h - m
-    if a.cta:  # botón CTA
-        f = ImageFont.truetype(fuente("titulos"), int(w * 0.04))
-        tw = d.textlength(a.cta, font=f)
-        bh = int(w * 0.085)
-        d.rounded_rectangle([m, y - bh, m + tw + bh, y], radius=bh // 2, fill=rgb("secundario"))
-        d.text((m + bh / 2, y - bh / 2), a.cta, font=f, fill=rgb("oscuro"), anchor="lm")
-        y -= bh + int(w * 0.05)
+    tam = 72
+    ic = logo("icono")
+    if ic:
+        icono = ImageOps.fit(Image.open(ic).convert("RGBA"), (tam, tam), Image.LANCZOS)
+        masc = Image.new("L", (tam, tam), 0)
+        ImageDraw.Draw(masc).ellipse([0, 0, tam - 1, tam - 1], fill=255)
+        img.paste(icono, (m_lat, m_sup), masc)
+    tinta = rgb("negro") if estilo == "gold" else rgb("blanco")
+    gris = rgb("negro") if estilo == "gold" else rgb("gris-barra")
+    x = m_lat + tam + 16
+    d.text((x, m_sup + tam // 2), marca.get("nombre", "Maracuyá Textil"),
+           font=ImageFont.truetype(fuente("negrita"), 28), fill=tinta, anchor="lm")
+    d.text((img.width - m_lat, m_sup + tam // 2), marca.get("handle", ""),
+           font=ImageFont.truetype(fuente("negrita"), 26), fill=gris, anchor="rm")
+
+
+def _pildora(d, x, y_base, texto, dato, estilo, ancho_max):
+    """Botón-píldora CTA. Devuelve la altura usada."""
+    fondo = rgb("negro") if estilo == "gold" else rgb("gold")
+    tinta = rgb("blanco") if estilo == "gold" else rgb("negro")
+    tinta_dato = rgb("gold") if estilo == "gold" else rgb("negro")
+    f = ImageFont.truetype(fuente("cta"), 34)
+    t1 = texto + (" " if dato else "")
+    w1, w2 = d.textlength(t1, font=f), d.textlength(dato or "", font=f)
+    alto, pad = 84, 40
+    while w1 + w2 + 2 * pad > ancho_max and f.size > 20:
+        f = ImageFont.truetype(fuente("cta"), f.size - 2)
+        w1, w2 = d.textlength(t1, font=f), d.textlength(dato or "", font=f)
+    d.rounded_rectangle([x, y_base - alto, x + w1 + w2 + 2 * pad, y_base], radius=alto // 2, fill=fondo)
+    d.text((x + pad, y_base - alto / 2), t1, font=f, fill=tinta, anchor="lm")
+    if dato:
+        d.text((x + pad + w1, y_base - alto / 2), dato, font=f, fill=tinta_dato, anchor="lm")
+    return alto
+
+
+def cmd_post(a):
+    """Pieza de redes con los estilos oficiales de Maracuyá Textil.
+
+    gold  = Inundada Gold: fondo gold, titular negro en minúsculas, píldora negra.
+    negro = Editorial oscura: fondo negro con grano, palabra gigante condensada en gold.
+    """
+    marca = cargar_marca()
+    w, h = FORMATOS[a.formato]
+    vertical = h >= 1900
+    m_lat = 96 if vertical else 64
+    m_sup = 250 if vertical else 56
+    m_inf = 400 if vertical else 64
+    estilo = a.estilo
+    cta = a.cta if a.cta is not None else "Escríbenos al"
+    dato = a.whatsapp if a.whatsapp is not None else marca.get("whatsapp", "")
+
+    if estilo == "gold":
+        img = Image.new("RGBA", (w, h), rgb("gold"))
+        if a.foto:  # foto arriba, panel gold con esquinas redondeadas tapando la parte baja
+            alto_foto = int(h * 0.55)
+            img.alpha_composite(ImageOps.fit(abrir(a.foto), (w, alto_foto + 56), Image.LANCZOS), (0, 0))
+            panel = Image.new("RGBA", (w, h - alto_foto + 56), (0, 0, 0, 0))
+            ImageDraw.Draw(panel).rounded_rectangle([0, 0, w, panel.height + 56], radius=56, fill=rgb("gold"))
+            img.alpha_composite(panel, (0, alto_foto))
+    else:
+        img = Image.new("RGBA", (w, h), rgb("negro"))
+        if a.foto:  # foto real a sangre, más contraste y fundido a negro abajo
+            foto = ImageEnhance.Contrast(ajustar(abrir(a.foto), w, h, "recortar")).enhance(1.15)
+            img.alpha_composite(foto)
+            capa = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+            dc = ImageDraw.Draw(capa)
+            for y in range(h):
+                t = max(0.0, (y - h * 0.30) / (h * 0.70))
+                dc.line([(0, y), (w, y)], fill=(0, 0, 0, int(255 * min(1, t * 1.25))))
+            img.alpha_composite(capa)
+        img = _grano(img)
+
+    d = ImageDraw.Draw(img)
+    # sobre una foto la barra va en claro para que se lea
+    _barra_marca(img, "negro" if a.foto else estilo, m_lat, 56 if not vertical else m_sup)
+    ancho = w - 2 * m_lat
+    y = h - m_inf
+
+    if a.cinta:  # cinta negra inferior con atributos en gold
+        alto_c = 92
+        d.rectangle([0, h - alto_c, w, h], fill=rgb("negro"))
+        fc, tc = _ajustar_fuente(d, a.cinta.upper(), "negrita", w - 2 * m_lat, 30, 1)
+        d.text((w / 2, h - alto_c / 2), tc, font=fc, fill=rgb("gold"), anchor="mm")
+        if not vertical:
+            y = h - alto_c - 48
+
+    if cta or dato:
+        y -= _pildora(d, m_lat, y, cta, dato, estilo, ancho) + 40
+
     if a.subtitulo:
-        f, t = texto_ajustado(d, a.subtitulo, fuente("texto"), w - 2 * m, int(w * 0.042))
-        d.multiline_text((m, y), t, font=f, fill=rgb("claro"), anchor="ld", spacing=10)
-        y -= d.multiline_textbbox((0, 0), t, font=f, spacing=10)[3] + int(w * 0.03)
-    f, t = texto_ajustado(d, a.titulo, fuente("titulos"), w - 2 * m, int(w * 0.095))
-    d.multiline_text((m, y), t, font=f, fill=rgb(a.color_titulo), anchor="ld", spacing=8)
-    if a.precio:
-        f = ImageFont.truetype(fuente("titulos"), int(w * 0.06))
-        r = int(w * 0.13)
-        cx, cy = w - m - r, m + r
-        d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=rgb("secundario"))
-        d.text((cx, cy), a.precio, font=f, fill=rgb("oscuro"), anchor="mm")
-    img = pegar_logo(img, posicion="arriba-izq", escala=0.2)
+        tinta = rgb("negro") if estilo == "gold" else rgb("gris-texto")
+        f, t = _ajustar_fuente(d, a.subtitulo, "texto", ancho, 34, 2)
+        d.multiline_text((m_lat, y), t, font=f, fill=tinta, anchor="ld", spacing=10)
+        y -= d.multiline_textbbox((0, 0), t, font=f, spacing=10)[3] + 28
+
+    if estilo == "gold":
+        f, t = _ajustar_fuente(d, a.titulo, "titulos", ancho, 118, 3)
+        d.multiline_text((m_lat, y), t, font=f, fill=rgb("negro"), anchor="ld", spacing=-int(f.size * 0.02))
+    else:
+        f, t = _ajustar_fuente(d, a.titulo.upper(), "condensada", ancho, 268, 2)
+        d.multiline_text((m_lat, y), t, font=f, fill=rgb("gold"), anchor="ld", spacing=-int(f.size * 0.16))
+    y_tit = y - d.multiline_textbbox((0, 0), t, font=f)[3]
+
+    if a.precio:  # un solo precio protagonista
+        color_p = rgb("negro") if estilo == "gold" else rgb("gold")
+        fp, _ = _ajustar_fuente(d, a.precio, "precio", ancho, 300 if a.foto is None else 180, 1)
+        tope = (56 if not vertical else m_sup) + 72 + 40
+        if y_tit - tope > fp.size * 0.85:
+            d.text((m_lat, tope), a.precio, font=fp, fill=color_p, anchor="la")
+            if a.nota_precio:
+                fn = ImageFont.truetype(fuente("texto"), 26)
+                gris = rgb("negro") if estilo == "gold" else rgb("gris-etiqueta")
+                fondo_p = d.textbbox((m_lat, tope), a.precio, font=fp, anchor="la")[3]
+                d.text((m_lat + 6, fondo_p + 14), a.nota_precio, font=fn, fill=gris)
+        else:
+            print("⚠ el precio no cabe junto al titular: acorta el texto o usa --formato story", file=sys.stderr)
+
     guardar(img, a.salida)
 
 
@@ -233,7 +343,7 @@ def main():
     s.add_argument("entrada"); s.add_argument("salida", help="archivo o carpeta")
     s.add_argument("--formato", default="post", help=f"uno, varios (a,b) o 'todos': {todos}")
     s.add_argument("--modo", choices=["recortar", "encajar", "desenfoque"], default="recortar")
-    s.add_argument("--fondo", default="claro"); s.set_defaults(fn=cmd_redimensionar)
+    s.add_argument("--fondo", default="negro"); s.set_defaults(fn=cmd_redimensionar)
 
     s = sp.add_parser("logo", help="marca de agua con logo")
     s.add_argument("entrada"); s.add_argument("salida"); s.add_argument("--logo")
@@ -248,24 +358,29 @@ def main():
     s.add_argument("--saturacion", type=float, default=1.15); s.add_argument("--nitidez", type=int, default=80)
     s.add_argument("--calido", action="store_true"); s.set_defaults(fn=cmd_mejorar)
 
-    s = sp.add_parser("post", help="pieza de redes con titular, CTA, precio y logo")
+    s = sp.add_parser("post", help="pieza de redes con estilo de marca (gold o negro)")
     s.add_argument("salida"); s.add_argument("--titulo", required=True)
-    s.add_argument("--subtitulo"); s.add_argument("--cta"); s.add_argument("--precio")
-    s.add_argument("--foto"); s.add_argument("--fondo", default="primario")
-    s.add_argument("--color-titulo", default="secundario")
+    s.add_argument("--estilo", choices=["gold", "negro"], default="gold",
+                   help="gold = Inundada Gold; negro = Editorial oscura")
+    s.add_argument("--subtitulo", help="una sola línea de apoyo")
+    s.add_argument("--cta", help="texto del botón (por defecto 'Escríbenos al'; '' para quitarlo)")
+    s.add_argument("--whatsapp", help="dato del botón (por defecto el WhatsApp de la marca)")
+    s.add_argument("--precio"); s.add_argument("--nota-precio", help="ej. 'c/u por docena'")
+    s.add_argument("--cinta", help="atributos reales separados por ' / '")
+    s.add_argument("--foto", help="foto real del taller o la prenda")
     s.add_argument("--formato", choices=FORMATOS, default="post"); s.set_defaults(fn=cmd_post)
 
     s = sp.add_parser("collage", help="cuadrícula de fotos")
     s.add_argument("fotos", nargs="+"); s.add_argument("-o", "--salida", required=True)
     s.add_argument("--formato", choices=FORMATOS, default="cuadrado")
     s.add_argument("--columnas", type=int); s.add_argument("--espacio", type=int, default=16)
-    s.add_argument("--fondo", default="claro"); s.add_argument("--logo", action="store_true")
+    s.add_argument("--fondo", default="negro"); s.add_argument("--logo", action="store_true")
     s.set_defaults(fn=cmd_collage)
 
     s = sp.add_parser("producto", help="producto sobre fondo de marca con sombra")
     s.add_argument("entrada"); s.add_argument("salida")
     s.add_argument("--formato", choices=FORMATOS, default="catalogo")
-    s.add_argument("--fondo", default="claro"); s.add_argument("--degradado", help="color inferior")
+    s.add_argument("--fondo", default="gold"); s.add_argument("--degradado", help="color inferior")
     s.add_argument("--escala", type=float, default=0.7); s.add_argument("--logo", action="store_true")
     s.set_defaults(fn=cmd_producto)
 

@@ -5,7 +5,9 @@ description: Edición de video para el equipo de marketing, diseño y ventas de 
 
 # Edición de video — Maracuyá
 
-Script principal: `.claude/skills/edicion-video/scripts/video.py` (ffmpeg). Usa la marca de `marca/marca.json` (colores por nombre: `primario`, `secundario`, `acento`, `claro`, `oscuro`, o hex) y el logo de `marca/logo.png`.
+Script principal: `.claude/skills/edicion-video/scripts/video.py` (ffmpeg). Usa la identidad de **Maracuyá Textil** en `marca/` (lee `marca/README.md`): colores `gold` #F6CD00 / `negro` / `blanco`, tipografía Archivo y el sticker del logo como marca de agua.
+
+Reglas de video de la marca: textos de reel de 2 a 5 palabras, **en minúsculas, blancos con contorno**; nada importante en los primeros 250 px ni en los últimos 400 px; contenido real del taller (bordado, máquina, manos, prenda puesta); sin transiciones exageradas ni efectos neón.
 
 ```bash
 V="python3 .claude/skills/edicion-video/scripts/video.py"
@@ -17,11 +19,11 @@ V="python3 .claude/skills/edicion-video/scripts/video.py"
 |---|---|
 | Ver duración/resolución | `$V info entrada.mp4` |
 | Cortar un tramo | `$V cortar in.mp4 out.mp4 --inicio 0:05 --fin 0:20` |
-| Pasar a Reel/TikTok/Story 9:16 | `$V formato in.mp4 out.mp4 --formato reel` (modo `desenfoque` por defecto; `recortar` o `barras --color primario`) |
+| Pasar a Reel/TikTok/Story 9:16 | `$V formato in.mp4 out.mp4 --formato reel` (modo `desenfoque` por defecto; `recortar` o `barras --color negro`) |
 | Feed 4:5 / cuadrado / YouTube | `--formato feed` / `cuadrado` / `youtube` |
-| Titular o gancho | `$V texto in.mp4 out.mp4 --texto "2x1 hoy" --posicion arriba --fondo primario --hasta 3` |
+| Titular o gancho | `$V texto in.mp4 out.mp4 --texto "así nace tu franela" --posicion arriba --hasta 3` (con caja: `--fondo gold --color negro`) |
 | Logo / marca de agua | `$V logo in.mp4 out.mp4 --posicion abajo-der --escala 0.18` |
-| Subtítulos quemados | `$V subtitulos in.mp4 out.mp4 --srt subs.srt --color secundario` |
+| Subtítulos quemados | `$V subtitulos in.mp4 out.mp4 --srt subs.srt` (Archivo Black, blanco con contorno; `--color gold` para resaltar) |
 | Música de fondo | `$V musica in.mp4 out.mp4 --musica pista.mp3 --volumen 0.25` (`--reemplazar` quita el audio original) |
 | Unir clips | `$V unir c1.mp4 c2.mp4 c3.mp4 -o out.mp4 --formato reel --transicion 0.4` |
 | Video desde fotos | `$V fotos f1.jpg f2.jpg f3.jpg -o out.mp4 --duracion 2.5 --musica pista.mp3` |
@@ -48,7 +50,7 @@ Si el usuario quiere un video generado desde cero o animado con plantillas, usa 
 ## Buenas prácticas por red
 - Reels/TikTok: 1080×1920, 7–30 s, texto dentro de la zona segura (evitar 250 px de arriba y 350 px de abajo).
 - Feed IG: 1080×1350. YouTube: 1920×1080. WhatsApp: < 16 MB.
-- Tono de copy según `marca/marca.json` (`tono`, `cta_default`).
+- Tono de copy según `marca/marca.json` (`tono`, `ejemplos_copy`). Cierre con WhatsApp 0414-1185571 / @maracuya.textil.
 
 ## Entrega
 Guarda los resultados en `entregas/video/AAAA-MM-DD_nombre.mp4` dentro del repo (o donde pida el usuario) y muéstralos con SendUserFile. Revisa siempre un fotograma (`portada`) antes de entregar para validar texto y encuadre.

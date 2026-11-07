@@ -1,19 +1,40 @@
 {
-  "_nota": "Valores provisionales: reemplázalos por los oficiales de Maracuyá.",
-  "nombre": "Maracuyá",
+  "_fuente": "Sistema de diseño 'Maracuyá Textil' (claude.ai/artifact/LyvEfiTjfUux3NaBCwd3Yg). Ver marca/README.md.",
+  "nombre": "Maracuyá Textil",
+  "rubro": "Taller de confección, bordado, DTF y serigrafía en Caracas",
   "colores": {
-    "primario": "#5B2A6E",
-    "secundario": "#F6C700",
-    "acento": "#6BA539",
-    "claro": "#FFF8E7",
-    "oscuro": "#1E1024"
+    "gold": "#F6CD00",
+    "gold-damero": "#E9C100",
+    "negro": "#000000",
+    "negro-suave": "#0E0E0E",
+    "blanco": "#FFFFFF",
+    "gris-texto": "#D6D6D6",
+    "gris-barra": "#D0D0D0",
+    "gris-etiqueta": "#A3A3A3",
+    "primario": "#F6CD00",
+    "secundario": "#000000",
+    "acento": "#F6CD00",
+    "claro": "#FFFFFF",
+    "oscuro": "#000000"
   },
   "fuentes": {
-    "titulos": "Inter Display:bold",
-    "texto": "Inter"
+    "titulos": "marca/fuentes/Archivo-900.ttf",
+    "condensada": "marca/fuentes/Archivo-Condensada-900.ttf",
+    "precio": "marca/fuentes/Archivo-Precio-900.ttf",
+    "cta": "marca/fuentes/Archivo-800.ttf",
+    "negrita": "marca/fuentes/Archivo-700.ttf",
+    "texto": "marca/fuentes/Archivo-400.ttf"
   },
-  "logo": "marca/logo.png",
-  "tono": "Cercano, tropical, alegre y directo. Tuteo. Frases cortas.",
-  "handle": "@maracuya",
-  "cta_default": "Escríbenos por DM"
+  "logo": "marca/stickers/sticker-logo.png",
+  "logos": {
+    "sticker": "marca/stickers/sticker-logo.png",
+    "horizontal": "marca/logos/maracuya-logo-horizontal-recorte.png",
+    "icono": "marca/logos/maracuya-icono-cuadrado.png",
+    "vertical": "marca/logos/maracuya-logo-vertical.png"
+  },
+  "tono": "Español venezolano, cercano, directo, con tuteo y frases cortas. Habla de lo que gana el cliente (su logo, su marca, su equipo). Sin 'el mejor' ni 'calidad premium', sin cifras ni testimonios inventados, sin emojis decorativos.",
+  "ejemplos_copy": ["Tus redes, en tu espalda.", "Tu logo, en el pecho.", "Uniforma a tu equipo.", "Así nace tu franela.", "Escríbenos y pide el tuyo"],
+  "whatsapp": "0414-1185571",
+  "handle": "@maracuya.textil",
+  "cta_default": "Escríbenos al 0414-1185571"
 }

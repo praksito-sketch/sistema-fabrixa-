@@ -106,7 +106,7 @@ def cmd_formato(a):
 
 
 def cmd_texto(a):
-    pos = {"arriba": "h*0.10", "centro": "(h-text_h)/2", "abajo": "h*0.80-text_h"}[a.posicion]
+    pos = {"arriba": "h*0.135", "centro": "(h-text_h)/2", "abajo": "h*0.79-text_h"}[a.posicion]
     enable = f":enable='between(t,{a.desde},{a.hasta})'" if a.hasta else ""
     caja = (f":box=1:boxcolor={hexff(a.fondo)}@0.85:boxborderw=28" if a.fondo else
             ":borderw=4:bordercolor=black@0.6")
@@ -136,12 +136,13 @@ def cmd_logo(a):
 def cmd_subtitulos(a):
     c = color(a.color).lstrip("#")
     bgr = c[4:6] + c[2:4] + c[0:2]  # ASS usa &HBBGGRR
-    nombre = Path(fuente("titulos")).stem
+    nombre = "Archivo Black"  # familia dentro de marca/fuentes/Archivo-900.ttf
+    fdir = str(Path(fuente("titulos")).parent)
     estilo = (f"FontName={nombre},Fontsize={a.tamano},PrimaryColour=&H00{bgr},"
               "OutlineColour=&H80000000,BorderStyle=1,Outline=3,Shadow=0,"
               f"Alignment=2,MarginV={a.margen}")
     srt = str(Path(a.srt).resolve()).replace(":", "\\:").replace("'", "\\'")
-    ff("-i", a.entrada, "-vf", f"subtitles='{srt}':force_style='{estilo}'",
+    ff("-i", a.entrada, "-vf", f"subtitles='{srt}':fontsdir='{fdir}':force_style='{estilo}'",
        *SALIDA_VIDEO, "-c:a", "copy", a.salida)
 
 
@@ -285,13 +286,13 @@ def main():
     s = sub("formato", cmd_formato, "adaptar a reel/story/feed/cuadrado/youtube")
     s.add_argument("--formato", choices=FORMATOS, default="reel")
     s.add_argument("--modo", choices=["desenfoque", "recortar", "barras"], default="desenfoque")
-    s.add_argument("--color", default="primario", help="color de barras")
+    s.add_argument("--color", default="negro", help="color de barras")
 
     s = sub("texto", cmd_texto, "texto/título sobre el video")
     s.add_argument("--texto", required=True)
     s.add_argument("--posicion", choices=["arriba", "centro", "abajo"], default="arriba")
     s.add_argument("--tamano", type=float, default=0.045, help="fracción de la altura")
-    s.add_argument("--color", default="claro"); s.add_argument("--fondo", help="color de caja")
+    s.add_argument("--color", default="blanco"); s.add_argument("--fondo", help="color de caja (gold o negro)")
     s.add_argument("--fuente", default="titulos")
     s.add_argument("--desde", default="0"); s.add_argument("--hasta")
 
@@ -303,7 +304,7 @@ def main():
 
     s = sub("subtitulos", cmd_subtitulos, "quemar subtítulos .srt con estilo de marca")
     s.add_argument("--srt", required=True); s.add_argument("--tamano", type=int, default=14)
-    s.add_argument("--color", default="secundario"); s.add_argument("--margen", type=int, default=60)
+    s.add_argument("--color", default="blanco"); s.add_argument("--margen", type=int, default=64, help="en escala 288 de alto (64 ≈ 430 px en 1920)")
 
     s = sub("musica", cmd_musica, "añadir música de fondo (loop + fades)")
     s.add_argument("--musica", required=True); s.add_argument("--volumen", type=float, default=0.25)

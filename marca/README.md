@@ -1,8 +1,22 @@
-# Marca Maracuyá
+# Marca Maracuyá Textil
 
-Fuente única de verdad de identidad visual para las skills de video y fotos.
+Copia local del sistema de diseño **Maracuyá Textil** (artifact en claude.ai) para que las skills de video y fotos produzcan piezas con la identidad real.
 
-- `marca.json` — colores, fuentes, tono, handle y CTA. **Los valores actuales son provisionales**: cámbialos por los oficiales.
-- `logo.png` — coloca aquí el logo (PNG con fondo transparente, idealmente ≥1000 px de ancho). Los scripts lo usan como marca de agua automáticamente si existe.
+| Carpeta / archivo | Qué es |
+|---|---|
+| `marca.json` | Colores, fuentes, logos, tono, WhatsApp y handle (lo leen los scripts) |
+| `logos/` | Logo horizontal, vertical e ícono (fondo negro: usar sobre negro o recortado en círculo) |
+| `stickers/sticker-logo.png` | Sticker del logo con fondo transparente: marca de agua por defecto |
+| `fuentes/` | Archivo (OFL, Google Fonts): 400, 700, 800, 900, condensada 62 % y 75 % para precios |
+| `brand/` | Aquí va el brand book / manual de marca (PDF, imágenes, Canva exportado) |
 
-Las fuentes deben estar instaladas en el sistema (`fc-list : family` para ver cuáles hay).
+## Reglas rápidas
+- **Colores**: solo `gold` #F6CD00 y `negro` #000000, con `blanco` de apoyo. No hay otras paletas de marca.
+- **Dos estilos, nunca mezclados**:
+  - *Inundada Gold*: fondo gold, texto negro, botón-píldora negro con texto blanco. Limpia, sin grano.
+  - *Editorial oscura*: fondo negro, foto real a sangre, UNA palabra gigante condensada en gold en mayúsculas, gold en un solo punto.
+- **Tipografía**: solo Archivo. Adirek Serif solo vive dentro del logotipo.
+- **Jerarquía**: 1 titular + 1 línea de apoyo + 1 dato/CTA. Un solo precio protagonista.
+- **Reels/historias**: zona segura 250 px arriba y 400 px abajo; textos de 2–5 palabras, blancos con contorno y en minúsculas.
+- **Imagen**: solo fotos reales del taller y las prendas. Nada de stock, neón, degradados arcoíris ni emojis.
+- **Contacto en piezas**: WhatsApp 0414-1185571 · Instagram @maracuya.textil.

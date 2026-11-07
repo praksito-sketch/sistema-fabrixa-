@@ -5,7 +5,13 @@ description: Creación y edición de fotos e imágenes para el equipo de marketi
 
 # Creación de fotos — Maracuyá
 
-Script principal: `.claude/skills/creacion-fotos/scripts/fotos.py` (Pillow). Usa colores, fuentes y logo de `marca/marca.json` / `marca/logo.png`. Colores por nombre (`primario`, `secundario`, `acento`, `claro`, `oscuro`) o hex.
+Script principal: `.claude/skills/creacion-fotos/scripts/fotos.py` (Pillow). Usa la identidad real de **Maracuyá Textil** desde `marca/` (colores, Archivo, logos, WhatsApp, handle). **Lee `marca/README.md` antes de diseñar** y, si existe, el brand book en `marca/brand/`.
+
+Colores por nombre: `gold` #F6CD00, `negro`, `blanco`, `gris-texto`, `gris-etiqueta` (o hex). No hay otras paletas de marca.
+
+**Dos estilos, nunca mezclados en una pieza:**
+- `--estilo gold` (Inundada Gold): fondo gold, titular negro en minúsculas con mayúscula inicial, píldora negra con el WhatsApp en gold. Sin grano.
+- `--estilo negro` (Editorial oscura): fondo negro con grano, foto real a sangre, titular gigante condensado en gold y mayúsculas. Gold en un solo punto.
 
 ```bash
 F="python3 .claude/skills/creacion-fotos/scripts/fotos.py"
@@ -15,9 +21,11 @@ F="python3 .claude/skills/creacion-fotos/scripts/fotos.py"
 
 | Necesidad | Comando |
 |---|---|
-| Post de promo con foto | `$F post out.png --foto foto.jpg --titulo "Jugo de maracuyá" --subtitulo "Recién hecho" --cta "Pide por DM" --precio '$9.900'` |
-| Post solo color (anuncio) | `$F post out.png --titulo "¡Promo de fin de semana!" --cta "Escríbenos" --fondo primario` |
-| Story | añade `--formato story` |
+| Post Inundada Gold | `$F post out.png --titulo "Tus redes, en tu espalda." --subtitulo "Bordado en nuestro taller en Caracas." --precio '$14' --nota-precio "c/u por docena" --cinta "100 % algodón / oversize o clásica"` |
+| Post Gold con foto (panel) | `$F post out.png --titulo "Así nace tu franela." --foto taller.jpg` |
+| Post Editorial oscura | `$F post out.png --estilo negro --titulo "Tu logo, bordado." --foto macro.jpg --precio '$14'` |
+| Story / reel-portada | añade `--formato story` (respeta zonas seguras 250/400 px) |
+| Cambiar el botón | `--cta "Pídela al"` (por defecto "Escríbenos al" + WhatsApp de la marca); `--cta ""` lo quita |
 | Redimensionar a redes | `$F redimensionar foto.jpg carpeta/ --formato post,story,facebook --modo desenfoque` (`todos` = todos los formatos) |
 | Logo / marca de agua | `$F logo in.jpg out.jpg --posicion abajo-der --opacidad 0.8` |
 | Retoque rápido | `$F mejorar in.jpg out.jpg --calido` |
@@ -36,8 +44,15 @@ Carga las herramientas con ToolSearch (`mcp__Canva__...`):
 - Subir fotos locales a Canva: `create-upload-url` o `upload-asset-from-url`.
 Para piezas simples y repetitivas (variantes de precio, redimensionar lotes, logo en 50 fotos) el script es más rápido.
 
-## Copy
-Escribe titulares cortos (máx. 6–7 palabras), un beneficio en el subtítulo y un CTA claro. Sigue el `tono` y `cta_default` de `marca/marca.json`. Ofrece 2–3 variantes de copy cuando sea una campaña.
+## Copy (tono Maracuyá)
+- Español venezolano, tuteo, frases cortas. Habla de lo que gana el cliente: «Tus redes, en tu espalda.», «Tu logo, en el pecho.», «Uniforma a tu equipo.».
+- 1 titular + 1 línea de apoyo + 1 dato/CTA. Un solo precio protagonista.
+- Nada de «el mejor», «calidad premium», testimonios ni cifras inventadas. Precios reales (pídelos si no los tienes).
+- «Delivery gratis a *casi* toda Caracas». Sin emojis en las piezas.
+- Ofrece 2–3 variantes de copy cuando sea una campaña.
+
+## Imagen
+Solo fotos reales del taller y las prendas (macro del bordado, manos trabajando, prenda puesta, flat lay). Nada de stock, neón, degradados arcoíris ni clip-art. Para una pieza con IA en Canva, que sea utilería o fondo, nunca un producto falso.
 
 ## Revisión antes de entregar
-Abre siempre la imagen resultante (Read) para comprobar legibilidad, que el texto no tape el producto y que el logo se vea. Guarda en `entregas/fotos/AAAA-MM-DD_nombre.png` (o donde pida el usuario) y muéstrala con SendUserFile.
+Abre siempre la imagen resultante (Read) y pasa el checklist de `marca/README.md`: ¿se entiende en 1 segundo en el celular?, ¿el protagonista es el producto real?, ¿gold sin mezclar estilos?, ¿solo Archivo?, ¿el texto no tapa el bordado?, ¿tildes correctas? Guarda en `entregas/fotos/AAAA-MM-DD_nombre.png` (o donde pida el usuario) y muéstrala con SendUserFile.

@@ -1,0 +1,19 @@
+{
+  "_nota": "Valores provisionales: reemplázalos por los oficiales de Maracuyá.",
+  "nombre": "Maracuyá",
+  "colores": {
+    "primario": "#5B2A6E",
+    "secundario": "#F6C700",
+    "acento": "#6BA539",
+    "claro": "#FFF8E7",
+    "oscuro": "#1E1024"
+  },
+  "fuentes": {
+    "titulos": "Inter Display:bold",
+    "texto": "Inter"
+  },
+  "logo": "marca/logo.png",
+  "tono": "Cercano, tropical, alegre y directo. Tuteo. Frases cortas.",
+  "handle": "@maracuya",
+  "cta_default": "Escríbenos por DM"
+}
